@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Filters\RamFilter;
 use App\Http\Resources\RamResource;
 use App\Models\Ram;
 use Exception;
@@ -12,10 +13,12 @@ use Illuminate\Http\Request;
 
 final class RamController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $ram = Ram::get();
+            $filters = new RamFilter($request);
+
+            $ram = Ram::filter($filters)->get();
 
             return response()->json(RamResource::collection($ram), 200);
         } catch (Exception $e) {

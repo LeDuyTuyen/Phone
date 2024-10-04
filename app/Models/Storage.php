@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Storage extends Model
+final class Storage extends Model
 {
     use HasFactory;
 
@@ -14,12 +16,16 @@ class Storage extends Model
     protected $table = 'storages';
 
     protected $fillable = [
-        'storage'
+        'storage',
     ];
-
 
     public function warehouse()
     {
         return $this->hasMany(Warehouse::class);
+    }
+
+    public function scopeFilter($query, $filters)
+    {
+        return $filters->apply($query);
     }
 }

@@ -38,4 +38,9 @@ final class Category extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function scopeFilter($query, $filters)
+    {
+        return $filters->apply($query);
+    }
 }

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Warehouse extends Model
+final class Warehouse extends Model
 {
     use HasFactory;
 
@@ -48,6 +50,11 @@ class Warehouse extends Model
 
     public function importOrderDetail()
     {
-        return $this->hasMany(ImportOrderDetail::class);
+        return $this->hasMany(ImportOrderDetails::class);
+    }
+
+    public function scopeFilter($query, $filters)
+    {
+        return $filters->apply($query);
     }
 }

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Ram extends Model
+final class Ram extends Model
 {
     use HasFactory;
 
@@ -17,10 +19,13 @@ class Ram extends Model
         'ram',
     ];
 
-
-
     public function warehouse()
     {
         return $this->hasMany(Warehouse::class);
+    }
+
+    public function scopeFilter($query, $filters)
+    {
+        return $filters->apply($query);
     }
 }

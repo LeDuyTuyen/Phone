@@ -10,6 +10,16 @@
             @update:visible="dialog = $event"
             @submit="handleSubmit"
         />
+        <template v-slot:text>
+            <v-text-field
+                v-model="search"
+                label="Tìm kiếm"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                hide-details
+                single-line
+            ></v-text-field>
+        </template>
 
         <v-data-table
             :headers="headers"
@@ -38,7 +48,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import ColorForm from "./form.vue";
 
 const dataSource = ref([]);
@@ -46,6 +56,7 @@ const color = ref({});
 const dialog = ref(false);
 const snackbar = ref(false);
 const snackbarMessage = ref("");
+const search = ref();
 
 const loading = ref(false);
 
@@ -60,7 +71,12 @@ const getColor = async () => {
     loading.value = true;
     try {
         const response = await axios.get(
-            "http://localhost:8000/api/admin/color"
+            "http://localhost:8000/api/admin/color",
+            {
+                params: {
+                    color: search.value,
+                },
+            }
         );
         dataSource.value = response.data;
     } catch (error) {
@@ -118,6 +134,23 @@ const edit = (item) => {
     color.value = { ...item };
     dialog.value = true;
 };
+
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func.apply(this, args);
+        }, wait);
+    };
+}
+
+watch(
+    search,
+    debounce(async (newSearch) => {
+        await getColor(newSearch);
+    }, 500)
+);
 
 onMounted(() => {
     getColor();

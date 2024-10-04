@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Filters\ColorFilter;
 use App\Http\Resources\ColorResource;
 use App\Models\Color;
 use Exception;
@@ -12,10 +13,12 @@ use Illuminate\Http\Request;
 
 final class ColorController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $color = Color::get();
+            $filters = new ColorFilter($request);
+
+            $color = Color::filter($filters)->get();
 
             return response()->json(ColorResource::collection($color), 200);
         } catch (Exception $e) {

@@ -13,7 +13,7 @@
         <template v-slot:text>
             <v-text-field
                 v-model="search"
-                label="Search"
+                label="Tìm kiếm"
                 prepend-inner-icon="mdi-magnify"
                 variant="outlined"
                 hide-details
@@ -28,7 +28,6 @@
             items-per-page-text="Hiển thị:"
             disable-sort
             :loading="loading"
-            :search="search"
         >
             <template v-slot:[`item.index`]="{ index }">
                 {{ index + 1 }}
@@ -49,11 +48,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import RamForm from "./form.vue";
 
 const dataSource = ref([]);
-const ram = ref({ id: "", ram: "" });
+const ram = ref();
 const dialog = ref(false);
 const snackbar = ref(false);
 const snackbarMessage = ref("");
@@ -70,7 +69,14 @@ const headers = [
 const getRam = async () => {
     loading.value = true;
     try {
-        const response = await axios.get("http://localhost:8000/api/admin/ram");
+        const response = await axios.get(
+            "http://localhost:8000/api/admin/ram",
+            {
+                params: {
+                    ram: search.value,
+                },
+            }
+        );
         dataSource.value = response.data;
 
         console.log(response.data);
@@ -129,6 +135,23 @@ const edit = (item) => {
     ram.value = { ...item };
     dialog.value = true;
 };
+
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func.apply(this, args);
+        }, wait);
+    };
+}
+
+watch(
+    search,
+    debounce(async (newSearch) => {
+        await getRam(newSearch);
+    }, 500)
+);
 
 onMounted(() => {
     getRam();

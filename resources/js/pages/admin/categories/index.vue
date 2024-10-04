@@ -10,6 +10,16 @@
             @update:visible="dialog = $event"
             @submit="handleSubmit"
         />
+        <template v-slot:text>
+            <v-text-field
+                v-model="search"
+                label="Tìm kiếm"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                hide-details
+                single-line
+            ></v-text-field>
+        </template>
 
         <v-data-table
             :headers="headers"
@@ -37,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import CategoryForm from "./form.vue";
 
 const dataSource = ref([]);
@@ -45,6 +55,7 @@ const category = ref({});
 const dialog = ref(false);
 const snackbar = ref(false);
 const snackbarMessage = ref("");
+const search = ref();
 
 const loading = ref(false);
 
@@ -59,7 +70,12 @@ const getCategory = async () => {
     loading.value = true;
     try {
         const response = await axios.get(
-            "http://localhost:8000/api/admin/category"
+            "http://localhost:8000/api/admin/category",
+            {
+                params: {
+                    category: search.value,
+                },
+            }
         );
         dataSource.value = response.data;
     } catch (error) {
@@ -121,6 +137,23 @@ const edit = (item) => {
     category.value = { ...item };
     dialog.value = true;
 };
+
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func.apply(this, args);
+        }, wait);
+    };
+}
+
+watch(
+    search,
+    debounce(async (newSearch) => {
+        await getCategory(newSearch);
+    }, 500)
+);
 
 onMounted(() => {
     getCategory();

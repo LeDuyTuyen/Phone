@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Filters\StorageFilter;
 use App\Http\Resources\StorageResource;
 use App\Models\Storage;
 use Exception;
@@ -12,10 +13,12 @@ use Illuminate\Http\Request;
 
 final class StorageController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $storage = Storage::get();
+            $filters = new StorageFilter($request);
+
+            $storage = Storage::filter($filters)->get();
 
             return response()->json(StorageResource::collection($storage), 200);
         } catch (Exception $e) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Filters\CategoryFilter;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Exception;
@@ -13,10 +14,12 @@ use Illuminate\Validation\ValidationException;
 
 final class CategoryController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $category = Category::get();
+            $filters = new CategoryFilter($request);
+
+            $category = Category::filter($filters)->get();
 
             return response()->json(CategoryResource::collection($category), 200);
         } catch (Exception $e) {

@@ -12,6 +12,16 @@
             @submit="handleSubmit"
         />
 
+        <template v-slot:text>
+            <v-text-field
+                v-model="search"
+                label="Tìm kiếm"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                hide-details
+                single-line
+            ></v-text-field>
+        </template>
         <v-data-table
             :headers="headers"
             :items="dataSource"
@@ -40,7 +50,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import WarehouseForm from "./form.vue";
 import axios from "axios";
 
@@ -49,7 +59,7 @@ const warehouse = ref({});
 const dialog = ref(false);
 const snackbar = ref(false);
 const snackbarMessage = ref("");
-
+const search = ref();
 const loading = ref(false);
 
 const headers = [
@@ -66,7 +76,8 @@ const getWarehouse = async () => {
     loading.value = true;
     try {
         const response = await axios.get(
-            "http://localhost:8000/api/admin/warehouse"
+            "http://localhost:8000/api/admin/warehouse",
+            { params: {} }
         );
         dataSource.value = response.data;
     } catch (error) {
@@ -128,6 +139,23 @@ const edit = (item) => {
     warehouse.value = { ...item };
     dialog.value = true;
 };
+
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func.apply(this, args);
+        }, wait);
+    };
+}
+
+watch(
+    search,
+    debounce(async (newSearch) => {
+        await getWarehouse(newSearch);
+    }, 500)
+);
 
 onMounted(() => {
     getWarehouse();

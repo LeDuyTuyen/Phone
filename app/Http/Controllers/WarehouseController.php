@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Filters\WarehouseFilter;
 use App\Http\Resources\WarehouseResource;
 use App\Models\Warehouse;
 use Exception;
@@ -12,11 +13,12 @@ use Illuminate\Http\Request;
 
 final class WarehouseController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
+            $filters = new WarehouseFilter($request);
 
-            $warehouses = Warehouse::with(['color', 'ram', 'storage', 'product'])->get();
+            $warehouses = Warehouse::filter($filters)->get();
 
             return response()->json(WarehouseResource::collection($warehouses)->resolve());
         } catch (Exception $e) {
