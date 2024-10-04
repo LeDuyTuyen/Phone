@@ -1,56 +1,42 @@
 <template>
-    <v-dialog v-model:visible="visible" max-width="500px">
+    <v-dialog v-model="visible" max-width="600px">
         <v-card>
             <v-card-title>
-                <span>{{ detail.id ? "Cập Nhật" : "Thêm" }} Chi Tiết</span>
+                <span class="headline">Thêm Chi Tiết Đơn Hàng Nhập</span>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form">
                     <v-text-field
-                        v-model="localDetail.name"
-                        label="Tên"
-                        required
-                    ></v-text-field>
-                    <v-textarea
-                        v-model="localDetail.description"
-                        label="Mô tả"
-                        required
-                    ></v-textarea>
+                        v-model="formData.detailField"
+                        label="Tên chi tiết"
+                    />
                 </v-form>
             </v-card-text>
             <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn text @click="close">Hủy</v-btn>
                 <v-btn color="primary" @click="submit">Lưu</v-btn>
+                <v-btn text @click="close">Hủy</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 
-const props = defineProps({
-    visible: Boolean,
-    detail: Object,
-});
+const props = defineProps(["visible", "importOrderId"]);
+const emit = defineEmits(["update:visible"]);
 
-const emit = defineEmits(["update:visible", "submit"]);
+const detailsForm = {};
 
-const localDetail = ref({ ...props.detail });
-
-watch(
-    () => props.detail,
-    (newValue) => {
-        localDetail.value = { ...newValue };
-    }
-);
-
-const close = () => {
+const submit = async () => {
+    await axios.post(`http://localhost:8000/api/admin/importOrderDetails`, {
+        ...detailsForm.value,
+        importOrderId: props.importOrderId,
+    });
     emit("update:visible", false);
 };
 
-const submit = () => {
-    emit("submit", localDetail.value);
+const close = () => {
+    emit("update:visible", false);
 };
 </script>

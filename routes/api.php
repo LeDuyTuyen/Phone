@@ -25,8 +25,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 //User API
-Route::get('/user/{id}', [UserController::class, 'show']);
-Route::get('/user', [UserController::class, 'index']);
+// Route::get('/user/{id}', [UserController::class, 'show']);
+// Route::get('/user', [UserController::class, 'index']);
 
 Route::prefix('admin')->middleware('api')->group(function (): void {
 
@@ -43,7 +43,7 @@ Route::prefix('admin')->middleware('api')->group(function (): void {
 
     //Product API
     Route::resource('product', ProductController::class);
-    Route::delete('/product/{product}/image/{public_id}', [ProductController::class, 'removeImage']);
+    // Route::delete('/product/{product}/image/{public_id}', [ProductController::class, 'removeImage']);
 
     //Color API
     Route::resource('color', ColorController::class);

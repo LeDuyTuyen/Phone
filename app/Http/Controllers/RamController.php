@@ -4,51 +4,62 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\RamResource;
 use App\Models\Ram;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class RamController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         try {
-            $rams = Ram::all();
+            $ram = Ram::get();
 
-            return response()->json($rams, 200);
+            return response()->json(RamResource::collection($ram), 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
+        $validateData = $request->validate([
+            'ram' => 'required|unique:rams',
+        ]);
         try {
-            $rams = Ram::create($request->all());
+            $ram = Ram::create($validateData);
 
-            return response()->json($rams, 201);
+            return response()->json([
+                'ram' => new RamResource($ram),
+            ], 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Ram $ram): JsonResponse
     {
+        $validateData = $request->validate([
+            'ram' => 'required|unique:rams,ram,' . $ram->id,
+        ]);
         try {
-            $rams = Ram::findOrFail($id);
 
-            $rams->update($request->all());
+            $ram->update($validateData);
 
-            return response()->json($rams, 200);
+            return response()->json([
+                'ram' => new RamResource($ram),
+            ], 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function destroy($id)
+    public function destroy(Ram $ram): JsonResponse
     {
         try {
-            Ram::findOrFail($id)->delete();
+            $ram->delete();
 
             return response()->json(['message' => 'Ram deleted successfully'], 204);
         } catch (Exception $e) {

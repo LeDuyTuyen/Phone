@@ -22,8 +22,10 @@
                     <v-file-input
                         v-model="localForm.image"
                         label="Chọn ảnh"
+                        prepend-icon="mdi-camera"
                         chips
                         multiple
+                        :item-text="getItemText"
                     />
 
                     <v-select
@@ -66,6 +68,9 @@ const rules = {
 const resetForm = () => {
     localForm.value = {};
 };
+function getItemText(item) {
+    return item.path ? item.path.split("/").pop() : item.name || "Không có tên";
+}
 
 const fetchOptions = async () => {
     try {
@@ -133,7 +138,7 @@ const submit = () => {
                     formData.append(`image[]`, file);
                 });
             } else {
-                formData.append(key, localForm.value[key]);
+                formData.append(key, localForm.value[key] || "");
             }
         });
         emit("submit", { formData, id: localForm.value.id });

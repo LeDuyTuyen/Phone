@@ -22,6 +22,7 @@
                     <v-file-input
                         v-model="localForm.image"
                         label="Chọn ảnh"
+                        prepend-icon="mdi-camera"
                         chips
                         multiple
                     />
@@ -123,7 +124,8 @@ watch(
 const submit = () => {
     if (valid.value) {
         const formData = new FormData();
-        formData.append("_method", "PATCH");
+        // formData.append("_method", "Post");
+
         Object.keys(localForm.value).forEach((key) => {
             if (key === "image" && localForm.value.image) {
                 // Nếu là ảnh, thêm từng file vào FormData
@@ -131,10 +133,11 @@ const submit = () => {
                     formData.append(`image[]`, file);
                 });
             } else {
-                formData.append(key, localForm.value[key]);
+                formData.append(key, localForm.value[key] || "");
             }
         });
-        emit("submit", { formData, id: localForm.value.id });
+
+        emit("submit", formData);
     }
 };
 

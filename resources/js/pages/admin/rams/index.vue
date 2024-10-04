@@ -10,6 +10,16 @@
             @update:visible="dialog = $event"
             @submit="handleSubmit"
         />
+        <template v-slot:text>
+            <v-text-field
+                v-model="search"
+                label="Search"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                hide-details
+                single-line
+            ></v-text-field>
+        </template>
 
         <v-data-table
             :headers="headers"
@@ -18,6 +28,7 @@
             items-per-page-text="Hiển thị:"
             disable-sort
             :loading="loading"
+            :search="search"
         >
             <template v-slot:[`item.index`]="{ index }">
                 {{ index + 1 }}
@@ -48,6 +59,7 @@ const snackbar = ref(false);
 const snackbarMessage = ref("");
 
 const loading = ref(false);
+const search = ref("");
 
 const headers = [
     { title: "STT", key: "index" },
@@ -61,7 +73,7 @@ const getRam = async () => {
         const response = await axios.get("http://localhost:8000/api/admin/ram");
         dataSource.value = response.data;
 
-        // console.log(dataSource.value);
+        console.log(response.data);
     } catch (error) {
         console.error("Failed to fetch rams:", error);
     } finally {

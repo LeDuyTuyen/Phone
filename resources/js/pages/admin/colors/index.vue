@@ -42,7 +42,7 @@ import { ref, onMounted } from "vue";
 import ColorForm from "./form.vue";
 
 const dataSource = ref([]);
-const color = ref({ id: "", name: "", code: "" });
+const color = ref({});
 const dialog = ref(false);
 const snackbar = ref(false);
 const snackbarMessage = ref("");

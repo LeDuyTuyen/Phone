@@ -6,6 +6,12 @@
         @update:visible="dialog = $event"
         @submit="handleSubmit"
     />
+    <ImportOrderDetailsForm
+        v-if="detailDialog"
+        :visible="detailDialog"
+        :importOrderId="importOrderId"
+        @update:visible="detailDialog = $event"
+    />
 
     <v-row>
         <v-btn color="primary" @click="dialog = true">Thêm</v-btn>
@@ -20,31 +26,6 @@
         :loading="loading"
         show-expand
     >
-        <!-- <template v-slot:expanded-item="{ item }">
-            <v-card>
-                <v-card-title>
-                    <span>Chi Tiết</span>
-                </v-card-title>
-                <v-card-text>
-                    <v-list>
-                        <v-list-item-group>
-                            <v-list-item
-                                v-for="(value, key) in item.details"
-                                :key="key"
-                                @click="viewDetail(key, value)"
-                            >
-                                <v-list-item-content>
-                                    <v-list-item-title>
-                                        <strong>{{ key }}</strong
-                                        >: {{ value }}
-                                    </v-list-item-title>
-                                </v-list-item-content>
-                            </v-list-item>
-                        </v-list-item-group>
-                    </v-list>
-                </v-card-text>
-            </v-card>
-        </template> -->
         <template v-slot:[`item.index`]="{ index }">
             {{ index + 1 }}
         </template>
@@ -69,17 +50,17 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import ImportOrderForm from "./form.vue";
+import ImportOrderDetailsForm from "./importOrderDetails/form.vue";
 
 const dataSource = ref([]);
 const importOrder = ref({});
 const dialog = ref(false);
+const detailDialog = ref(false);
+const importOrderId = ref(null);
 const snackbar = ref(false);
 const snackbarMessage = ref("");
 
 const loading = ref(false);
-
-const selectedDetailData = ref({});
-const selectedDetailTitle = ref("");
 
 const headers = [
     { title: "STT", key: "index" },
@@ -153,21 +134,9 @@ const remove = async (item) => {
         console.error("Failed to delete importOrder:", error);
     }
 };
-const add = async (item) => {
-    try {
-        await axios.post(`http://localhost:8000/api/admin/importOrderDetails`, {
-            importOrderId: item.id,
-        });
-        snackbarMessage.value = "Chi tiết đã được thêm!";
-        snackbar.value = true;
-    } catch (error) {
-        console.error("Failed to add importOrderDetails:", error);
-    }
-};
 
-const viewDetail = (key, value) => {
-    selectedDetailTitle.value = key;
-    selectedDetailData.value = { [key]: value };
+const add = (item) => {
+    importOrderId.value = item.id;
     detailDialog.value = true;
 };
 

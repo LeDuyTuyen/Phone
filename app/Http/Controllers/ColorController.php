@@ -4,51 +4,64 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ColorResource;
 use App\Models\Color;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class ColorController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         try {
-            $colors = Color::all();
+            $color = Color::get();
 
-            return response()->json($colors, 200);
+            return response()->json(ColorResource::collection($color), 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
+        $validateData = $request->validate([
+            'name' => 'required|unique:colors',
+            'code' => 'required',
+        ]);
         try {
-            $colors = Color::create($request->all());
+            $color = Color::create($validateData);
 
-            return response()->json($colors, 201);
+            return response()->json([
+                'color' => new ColorResource($color),
+            ], 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Color $color): JsonResponse
     {
+        $validateData = $request->validate([
+            'name' => 'required|unique:colors,name,' . $color->id,
+            'code' => 'required',
+        ]);
         try {
-            $colors = Color::findOrFail($id);
 
-            $colors->update($request->all());
+            $color->update($validateData);
 
-            return response()->json($colors, 200);
+            return response()->json([
+                'color' => new ColorResource($color),
+            ], 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function destroy($id)
+    public function destroy(Color $color): JsonResponse
     {
         try {
-            Color::findOrFail($id)->delete();
+            $color->delete();
 
             return response()->json(['message' => 'Color deleted successfully'], 204);
         } catch (Exception $e) {

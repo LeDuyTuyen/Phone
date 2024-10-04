@@ -4,51 +4,62 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\StorageResource;
 use App\Models\Storage;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class StorageController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         try {
-            $storages = Storage::all();
+            $storage = Storage::get();
 
-            return response()->json($storages, 200);
+            return response()->json(StorageResource::collection($storage), 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
+        $validateData = $request->validate([
+            'storage' => 'required|unique:storages',
+        ]);
         try {
-            $storages = Storage::create($request->all());
+            $storage = Storage::create($validateData);
 
-            return response()->json($storages, 201);
+            return response()->json([
+                'storage' => new StorageResource($storage),
+            ], 201);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Storage $storage): JsonResponse
     {
+        $validateData = $request->validate([
+            'storage' => 'required|unique:storages,storage,' . $storage->id,
+        ]);
         try {
-            $storages = Storage::findOrFail($id);
 
-            $storages->update($request->all());
+            $storage->update($validateData);
 
-            return response()->json($storages, 200);
+            return response()->json([
+                'storage' => new StorageResource($storage),
+            ], 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function destroy($id)
+    public function destroy(Storage $storage): JsonResponse
     {
         try {
-            Storage::findOrFail($id)->delete();
+            $storage->delete();
 
             return response()->json(['message' => 'Storage deleted successfully'], 204);
         } catch (Exception $e) {

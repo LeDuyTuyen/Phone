@@ -15,14 +15,26 @@
             @update:visible="updateDialog = $event"
             @submit="update"
         />
+        <template v-slot:text>
+            <v-text-field
+                v-model="search"
+                label="Tìm kiếm"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                hide-details
+                single-line
+                density="compact"
+                flat
+            ></v-text-field>
+        </template>
 
         <v-data-table
             :headers="headers"
             :items="dataSource"
             :items-per-page="20"
             items-per-page-text="Hiển thị:"
-            disable-sort
             :loading="loading"
+            disable-sort
         >
             <template v-slot:[`item.index`]="{ index }">
                 {{ index + 1 }}
@@ -58,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import createForm from "./createForm.vue";
 import updateForm from "./updateForm.vue";
 
@@ -69,6 +81,7 @@ const updateDialog = ref(false);
 const snackbar = ref(false);
 const snackbarMessage = ref("");
 const loading = ref(false);
+const search = ref("");
 
 const headers = [
     { title: "STT", key: "index" },
@@ -83,11 +96,16 @@ const getProduct = async () => {
     loading.value = true;
     try {
         const response = await axios.get(
-            "http://localhost:8000/api/admin/product"
+            "http://localhost:8000/api/admin/product",
+            {
+                params: {
+                    search: search.value,
+                },
+            }
         );
         dataSource.value = response.data;
 
-        // console.log(response);
+        console.log(response);
     } catch (error) {
         console.error("Failed to fetch product :", error);
     } finally {
@@ -97,10 +115,7 @@ const getProduct = async () => {
 
 const store = async (formData) => {
     try {
-        await axios.post(
-            "http://localhost:8000/api/admin/product/upload",
-            formData
-        );
+        await axios.post("http://localhost:8000/api/admin/product", formData);
         snackbarMessage.value = "Thêm thành công!";
         snackbar.value = true;
         await getProduct();
@@ -160,6 +175,23 @@ const edit = (item) => {
     product.value = { ...item };
     updateDialog.value = true;
 };
+
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func.apply(this, args);
+        }, wait);
+    };
+}
+
+watch(
+    search,
+    debounce(async (newSearch) => {
+        await getProduct(newSearch);
+    }, 500)
+);
 
 onMounted(() => {
     getProduct();

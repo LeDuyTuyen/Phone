@@ -7,11 +7,12 @@ namespace App\Http\Controllers;
 use App\Http\Resources\WarehouseResource;
 use App\Models\Warehouse;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class WarehouseController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         try {
 
@@ -23,7 +24,7 @@ final class WarehouseController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         try {
             $warehouse = Warehouse::create([
@@ -45,7 +46,7 @@ final class WarehouseController extends Controller
         }
     }
 
-    public function update(Request $request, Warehouse $warehouse)
+    public function update(Request $request, Warehouse $warehouse): JsonResponse
     {
         try {
             // dd($request->toArray());
@@ -56,7 +57,7 @@ final class WarehouseController extends Controller
                 'storage_id' => is_array($request->storage) ? ($request->storage['id'] ?? null) : $request->storage,
                 'price'      => $request->price,
             ];
-            
+
             $warehouse->update($data);
 
             return response()->json(
@@ -70,7 +71,7 @@ final class WarehouseController extends Controller
         }
     }
 
-    public function destroy(Warehouse $warehouse)
+    public function destroy(Warehouse $warehouse): JsonResponse
     {
         try {
             $warehouse->delete();

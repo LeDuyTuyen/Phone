@@ -45,4 +45,9 @@ final class Product extends Model
     {
         return $this->hasMany(Warehouse::class);
     }
+
+    public function scopeFilter($query, $filters)
+    {
+        return $filters->apply($query);
+    }
 }

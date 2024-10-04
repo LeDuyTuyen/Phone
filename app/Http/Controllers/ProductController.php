@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Filters\ProductFilter;
 use App\Http\Resources\ProductResource;
 use App\Models\Image;
 use App\Models\Product;
@@ -14,10 +15,12 @@ use Illuminate\Http\Request;
 
 final class ProductController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $products = Product::get();
+            $filters = new ProductFilter($request);
+
+            $products = Product::filter($filters)->get();
 
             return response()->json(ProductResource::collection($products));
         } catch (Exception $e) {
@@ -27,8 +30,17 @@ final class ProductController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        // dd($request->toArray());
+        $validatedData = $request->validate([
+            'name'        => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'required|integer|exists:categories,id',
+            'image'       => 'nullable|array',
+            'image.*'     => 'file|image|max:2048',
+        ]);
         try {
-            $product = Product::create($request->only(['name', 'description', 'category_id']));
+
+            $product = Product::create($validatedData);
             if ($request->hasFile('image')) {
                 $uploadedFiles = $request->file('image');
                 foreach ($uploadedFiles as $uploadedFile) {
@@ -57,8 +69,15 @@ final class ProductController extends Controller
     public function update(Request $request, Product $product): JsonResponse
     {
         // dd($request->toArray());
+        $validatedData = $request->validate([
+            'name'        => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'required|integer|exists:categories,id',
+            'image'       => 'nullable|array',
+            'image.*'     => 'file|image|max:2048',
+        ]);
         try {
-            $product->update($request->only(['name', 'description', 'category_id']));
+            $product->update($validatedData);
             if ($request->hasFile('image')) {
                 $uploadedFiles = $request->file('image');
 
